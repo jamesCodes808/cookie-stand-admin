@@ -1,29 +1,30 @@
 import {hours} from "@/data";
+const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+import React, { useEffect} from "react";
 
 // @ts-ignore
-export default function ReportTable( { stores, loading } ){
-
-   if (loading) {<text className='font-medium'>Report Table Coming Soon...</text>;}
+export default function ReportTable( { stores, loading, deleteResource } ){
 
     function getBottomTotals() {
-        let hourlyTotalsList = Array.from({ length: hours.length }, () => 0)
-
+       let hourlyTotalsList = new Array(hours.length).fill(0)
+       // let hourlyTotalsList = Array.from({ length: hours.length }, () => 0)
         for (let store of stores) {
-            for (let [hourIndex, sale] of store.hourly_sales.entries()){
+            store.hourly_sales.forEach((sale:number, hourIndex:number) => {
                 hourlyTotalsList[hourIndex] += sale
-            }
+            })
         }
         return hourlyTotalsList
     }
-
     function getHourlySales() {
+
         for (let store of stores) {
-            console.log(store)
             const totalSoldPerHour = [];
-            for (let hour of hours) {
-                totalSoldPerHour.push(Math.round(Math.round((Math.random() * (store.maximum_customers_per_hour - store.minimum_customers_per_hour) + store.minimum_customers_per_hour)) * store.average_cookies_per_sale))
+            if (store.hourly_sales.length < hours.length) {
+                for (let hour of hours) {
+                    totalSoldPerHour.push(Math.round(Math.round((Math.random() * (store.maximum_customers_per_hour - store.minimum_customers_per_hour) + store.minimum_customers_per_hour)) * store.average_cookies_per_sale))
+                }
+                store.hourly_sales = Array.from(totalSoldPerHour)
             }
-            store.hourly_sales = Array.from(totalSoldPerHour)
         }
     }
     function getGrandTotal() {
@@ -34,13 +35,13 @@ export default function ReportTable( { stores, loading } ){
         return grandTotal
     }
 
-    getHourlySales()
-    // for (let store in stores) {
-    //         getHourlySales(store.maximum_customers_per_hour, store.minimum_customers_per_hour, store.average_cookies_per_sale)
-    // }
-
+   if (loading) {<text className='font-medium'>Report Table Coming Soon...</text>;}
+   else {
+        getHourlySales()
+   }
 
     console.log(stores)
+
     return (
     <>
      <div className='flex container mx-auto w-max'>
@@ -58,11 +59,11 @@ export default function ReportTable( { stores, loading } ){
                     </tr>
                  </thead>
                  <tbody>
-                 {stores.map((store: { pk: number, location: string, hourly_sales: number[], minimum_customers_per_hour: number, maximum_customers_per_hour: number, average_cookies_per_sale: number }) => (
-                    <tr key={store.pk} className='even:bg-[#35D298] odd:bg-[#6EE7B7]'>
-                        <td>{store.location}</td>
+                 {stores.map((store: { id: number, location: string, hourly_sales: number[], minimum_customers_per_hour: number, maximum_customers_per_hour: number, average_cookies_per_sale: number }) => (
+                    <tr key={store.id} className='even:bg-[#35D298] odd:bg-[#6EE7B7]'>
+                        <td>{store.location} <text onClick={()=> deleteResource(store.id)}>[x]</text></td>
                         {store.hourly_sales.map((sale: number) => (
-                            <td key={store.pk}>{sale}</td>
+                            <td key={store.id}>{sale}</td>
                         ))}
                         <td>{store.hourly_sales.reduce((acc:number, sale:number) => acc + sale, 0)}</td>
                     </tr>
@@ -71,10 +72,12 @@ export default function ReportTable( { stores, loading } ){
              </tbody>
                <tfoot className='bg-[#15B981]'>
                    <th>Totals</th>
-                   {getBottomTotals().map(total => (
-                       <td key={total}>{total}</td>
-                   ))}
-                   <td>{getGrandTotal()}</td>
+
+                       {getBottomTotals().map((total,idx) => (
+                           <td key={idx}>{total}</td>
+                       ))}
+                       <td>{getGrandTotal()}</td>
+
                </tfoot>
             </table>
              :

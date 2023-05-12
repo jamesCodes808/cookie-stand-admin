@@ -1,14 +1,41 @@
 import { hours } from '@/data';
 import { useState } from 'react';
 import ReportTable from "@/components/ReportTable";
-
+import { useAuth } from "@/contexts/auth";
 // @ts-ignore
-export default function CreateForm(){
+export default function CreateForm({ createResource }){
+
+    const { user } = useAuth()
+    function handleSubmit(event: React.FormEvent<HTMLFormElement>):void{
+        event.preventDefault()
+        const target = event.target as typeof event.target & {
+            location: { value: string };
+            min_cust: { value : number};
+            max_cust: { value : number};
+            avg_cookies: { value : number};
+        }
+
+        let newCookieStand = {
+            owner: user.id,
+            location: target.location.value,
+            minimum_customers_per_hour: target.min_cust.value,
+            maximum_customers_per_hour: target.max_cust.value,
+            average_cookies_per_sale: target.avg_cookies.value,
+            hourly_sales: Array.from({length: hours.length}, () =>
+                            Math.round(
+                            Math.round(
+                              (Math.random() * (target.max_cust.value - target.min_cust.value) + target.min_cust.value)
+                            ) * target.avg_cookies.value)),
+        };
+
+
+        createResource(newCookieStand)
+    }
 
     return (
     <>
         <div className='text-center'>
-            <form className='bg-green-300 m-20 py-3 rounded-md'>
+            <form className='bg-green-300 m-20 py-3 rounded-md' onSubmit={handleSubmit}>
                 <div>
                     <text className='text-3xl p-2'>Create Cookie Stand</text>
                 </div>

@@ -5,12 +5,13 @@ import Footer from "@/components/Footer";
 // import {hours} from "@/data";
 import { useAuth } from "@/contexts/auth";
 import useResource from "@/hooks/useResources";
+import LoginForm from "@/components/LoginForm";
 
 export default function Main() {
 
-    // const [listOfStores, setStoreInfo] = useState([]);
+    // const [state, setStoreInfo] = useState([]);
     const { user, login } = useAuth()
-    const { resources, loading } = useResource();
+    const { resources, loading, createResource, deleteResource } = useResource();
 
     // function handleSubmit(event: React.FormEvent<HTMLFormElement>):void {
     //     event.preventDefault()
@@ -35,51 +36,38 @@ export default function Main() {
 
     function handleLogin(event: React.FormEvent<HTMLFormElement>):void {
         event.preventDefault()
+
         const target = event.target as typeof event.target & {
              username: { value: string };
              password: { value: string };
          }
+
+         console.log(target.username.value, target.password.value)
         login(target.username.value, target.password.value)
     }
 
 
+    // @ts-ignore
     return (
     <>
         <div className="flex flex-col min-h-screen">
             <div className='bg-white flex flex-col h-screen justify-center items-center'>
                 {user ? (
                 <>
-                    <CreateForm></CreateForm>
+                    <CreateForm
+                        createResource={createResource}
+                    ></CreateForm>
                     <ReportTable
-                        stores={resources}
+                        stores={resources || []}
                         loading={loading}
+                        deleteResource={deleteResource}
                     ></ReportTable>
                 </>
                 )
                 :
                     (
                         <>
-                         <div className='container text-center w-auto'>
-                            <form className='bg-[#A9F4D1] rounded-md'
-                                  onSubmit={handleLogin}
-
-                            >
-
-                                <div className='flex flex-col items-center'>
-                                    <label className='font-bold' htmlFor='username'>USER NAME</label>
-                                    <input id='username' type='text' className=''/>
-                                </div>
-
-                                <div className='flex flex-col items-center m-5'>
-                                    <label className='font-bold' htmlFor='password'>PASSWORD</label>
-                                    <input id='password' type='password' className=''/>
-                                </div>
-
-                                <button className='bg-[#15B880] rounded-md w-11/12 h-10 mb-5'
-                                // onClick={()=> login('admin', 'password')}
-                                >SIGN IN</button>
-                            </form>
-                         </div>
+                            <LoginForm handleLogin={handleLogin}></LoginForm>
                         </>
                     )}
 

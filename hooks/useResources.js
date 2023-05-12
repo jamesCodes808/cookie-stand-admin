@@ -29,6 +29,8 @@ export default function useResource() {
 
     async function createResource(info) {
 
+        let url = apiUrl + '/'
+
         try {
             const options = config();
             options.method = "POST",
