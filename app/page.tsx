@@ -1,9 +1,10 @@
 'use client'
 import Header from '@/components/Header'
 import Main from '@/components/Main'
-import ReportTable from "@/components/ReportTable";
-
+import { useAuth } from "@/contexts/auth";
 export default function CookieStandAdmin() {
+
+
   return (
   <>
   <div className=''>

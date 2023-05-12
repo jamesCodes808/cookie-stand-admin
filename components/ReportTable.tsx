@@ -1,52 +1,70 @@
 import {hours} from "@/data";
 
-export default function ReportTable( {listOfStores} ){
+// @ts-ignore
+export default function ReportTable( { stores, loading } ){
 
-    console.log(listOfStores)
+   if (loading) {<text className='font-medium'>Report Table Coming Soon...</text>;}
 
     function getBottomTotals() {
         let hourlyTotalsList = Array.from({ length: hours.length }, () => 0)
 
-        for (let store of listOfStores) {
-            for (let [hourIndex, sale] of store.totalSoldPerHour.entries()){
+        for (let store of stores) {
+            for (let [hourIndex, sale] of store.hourly_sales.entries()){
                 hourlyTotalsList[hourIndex] += sale
             }
         }
         return hourlyTotalsList
     }
 
+    function getHourlySales() {
+        for (let store of stores) {
+            console.log(store)
+            const totalSoldPerHour = [];
+            for (let hour of hours) {
+                totalSoldPerHour.push(Math.round(Math.round((Math.random() * (store.maximum_customers_per_hour - store.minimum_customers_per_hour) + store.minimum_customers_per_hour)) * store.average_cookies_per_sale))
+            }
+            store.hourly_sales = Array.from(totalSoldPerHour)
+        }
+    }
     function getGrandTotal() {
         let grandTotal = 0
-        for (let store of listOfStores) {
-            grandTotal += store.totalSoldPerHour.reduce((acc:number, sale:number) => acc + sale, 0)
+        for (let store of stores) {
+            grandTotal += store.hourly_sales.reduce((acc:number, sale:number) => acc + sale, 0)
         }
         return grandTotal
     }
 
+    getHourlySales()
+    // for (let store in stores) {
+    //         getHourlySales(store.maximum_customers_per_hour, store.minimum_customers_per_hour, store.average_cookies_per_sale)
+    // }
+
+
+    console.log(stores)
     return (
     <>
      <div className='flex container mx-auto w-max'>
-         {listOfStores.length ?
+         {!loading ?
 
              <table className='table-auto'>
                  <thead className='bg-green-400 p-2'>
                     <tr>
                     <th>Location</th>
                     {hours.map(hour => (
-                     <th>{hour}</th>
+                     <th key={hour}>{hour}</th>
                      ))
                     }
                     <th>Totals</th>
                     </tr>
                  </thead>
                  <tbody>
-                 {listOfStores.map((store: { id: number, location: string, totalSoldPerHour: number[] }) => (
-                    <tr key={store.id} className='even:bg-[#35D298] odd:bg-[#6EE7B7]'>
+                 {stores.map((store: { pk: number, location: string, hourly_sales: number[], minimum_customers_per_hour: number, maximum_customers_per_hour: number, average_cookies_per_sale: number }) => (
+                    <tr key={store.pk} className='even:bg-[#35D298] odd:bg-[#6EE7B7]'>
                         <td>{store.location}</td>
-                        {store.totalSoldPerHour.map((sale: number) => (
-                            <td>{sale}</td>
+                        {store.hourly_sales.map((sale: number) => (
+                            <td key={store.pk}>{sale}</td>
                         ))}
-                        <td>{store.totalSoldPerHour.reduce((acc:number, sale:number) => acc + sale, 0)}</td>
+                        <td>{store.hourly_sales.reduce((acc:number, sale:number) => acc + sale, 0)}</td>
                     </tr>
                  ))
                  }
@@ -54,7 +72,7 @@ export default function ReportTable( {listOfStores} ){
                <tfoot className='bg-[#15B981]'>
                    <th>Totals</th>
                    {getBottomTotals().map(total => (
-                       <td>{total}</td>
+                       <td key={total}>{total}</td>
                    ))}
                    <td>{getGrandTotal()}</td>
                </tfoot>
